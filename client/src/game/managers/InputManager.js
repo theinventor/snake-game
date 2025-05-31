@@ -1,0 +1,75 @@
+export class InputManager {
+    constructor(scene) {
+        this.scene = scene;
+        this.lastInputTime = 0;
+        this.inputBuffer = [];
+        this.inputDelay = 100; // Minimum time between inputs in ms
+        
+        console.log('InputManager initialized');
+    }
+    
+    handleInput(direction) {
+        const currentTime = Date.now();
+        
+        // Prevent too rapid input changes
+        if (currentTime - this.lastInputTime < this.inputDelay) {
+            return;
+        }
+        
+        // Validate direction
+        if (!this.isValidDirection(direction)) {
+            console.warn('Invalid direction:', direction);
+            return;
+        }
+        
+        // Send to game manager
+        if (this.scene.gameManager) {
+            this.scene.gameManager.changeDirection(direction);
+            this.lastInputTime = currentTime;
+            
+            console.log('Direction changed to:', direction);
+        }
+        
+        // Send to multiplayer system if in multiplayer mode
+        if (this.scene.multiplayerSystem) {
+            this.scene.multiplayerSystem.sendInput(direction);
+        }
+    }
+    
+    isValidDirection(direction) {
+        const validDirections = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+        return validDirections.includes(direction);
+    }
+    
+    // Buffer input for smooth gameplay
+    bufferInput(direction) {
+        if (this.inputBuffer.length < 3) { // Max 3 buffered inputs
+            this.inputBuffer.push(direction);
+        }
+    }
+    
+    getNextBufferedInput() {
+        return this.inputBuffer.shift();
+    }
+    
+    clearInputBuffer() {
+        this.inputBuffer = [];
+    }
+    
+    // Get opposite direction (for preventing reverse movement)
+    getOppositeDirection(direction) {
+        const opposites = {
+            'UP': 'DOWN',
+            'DOWN': 'UP',
+            'LEFT': 'RIGHT',
+            'RIGHT': 'LEFT'
+        };
+        return opposites[direction];
+    }
+    
+    // Check if direction change is valid (not opposite to current)
+    isValidDirectionChange(newDirection, currentDirection) {
+        if (!currentDirection) return true;
+        return this.getOppositeDirection(currentDirection) !== newDirection;
+    }
+}
