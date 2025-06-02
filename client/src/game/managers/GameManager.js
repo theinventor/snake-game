@@ -54,6 +54,15 @@ export class GameManager {
     moveSnake() {
         if (!this.snake) return;
         
+        // Process any buffered inputs before moving
+        if (this.scene.inputManager) {
+            const bufferedInput = this.scene.inputManager.getNextBufferedInput();
+            if (bufferedInput) {
+                this.snake.changeDirection(bufferedInput);
+                console.log('Applied buffered direction:', bufferedInput);
+            }
+        }
+        
         // Move snake
         this.snake.move();
         
