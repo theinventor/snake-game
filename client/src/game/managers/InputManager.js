@@ -10,27 +10,20 @@ export class InputManager {
     }
     
     handleInput(direction) {
-        const currentTime = Date.now();
-        
         // Validate direction
         if (!this.isValidDirection(direction)) {
             console.warn('Invalid direction:', direction);
             return;
         }
         
-        // For very rapid inputs, use buffering
-        if (currentTime - this.lastInputTime < 50) {
-            this.bufferInput(direction);
-            return;
-        }
-        
-        // Send to game manager immediately
+        // Try to apply direction immediately - let Snake class handle validation
         if (this.scene.gameManager) {
             this.scene.gameManager.changeDirection(direction);
-            this.lastInputTime = currentTime;
-            
-            console.log('Direction changed to:', direction);
+            console.log('Direction input received:', direction);
         }
+        
+        // For rapid inputs that might be blocked, also buffer them
+        this.bufferInput(direction);
         
         // Send to multiplayer system if in multiplayer mode
         if (this.scene.multiplayerSystem) {
@@ -45,13 +38,12 @@ export class InputManager {
     
     // Buffer input for smooth gameplay
     bufferInput(direction) {
+        // Clear buffer if it has the same direction to avoid duplicates
+        this.inputBuffer = this.inputBuffer.filter(buffered => buffered !== direction);
+        
         if (this.inputBuffer.length < this.maxBufferSize) {
-            // Only buffer if it's a valid direction change
-            const lastBuffered = this.inputBuffer[this.inputBuffer.length - 1];
-            if (!lastBuffered || this.isValidDirectionChange(direction, lastBuffered)) {
-                this.inputBuffer.push(direction);
-                console.log('Input buffered:', direction);
-            }
+            this.inputBuffer.push(direction);
+            console.log('Input buffered:', direction);
         }
     }
     

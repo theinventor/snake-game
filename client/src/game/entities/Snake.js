@@ -54,7 +54,7 @@ export class Snake {
     }
     
     changeDirection(newDirection) {
-        // Prevent reverse movement
+        // Prevent reverse movement only if snake has more than 1 segment
         const opposites = {
             'UP': 'DOWN',
             'DOWN': 'UP',
@@ -62,9 +62,12 @@ export class Snake {
             'RIGHT': 'LEFT'
         };
         
-        if (opposites[this.direction] !== newDirection) {
+        // Allow any direction if snake is only head, or if not reverse direction
+        if (this.body.length === 1 || opposites[this.direction] !== newDirection) {
             this.nextDirection = newDirection;
             console.log('Snake direction queued:', newDirection);
+        } else {
+            console.log('Reverse movement blocked:', newDirection);
         }
     }
     
